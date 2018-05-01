@@ -38,15 +38,6 @@ static Events::ModuleEventProvider* aclevprov;
 static Events::ModuleEventProvider* reqevprov;
 static http_parser_settings parser_settings;
 
-/** HTTP socket states
- */
-enum HttpState
-{
-	HTTP_SERVE_WAIT_REQUEST = 0, /* Waiting for a full request */
-	HTTP_SERVE_RECV_POSTDATA = 1, /* Waiting to finish recieving POST data */
-	HTTP_SERVE_SEND_DATA = 2 /* Sending response */
-};
-
 /** A socket used for HTTP transport
  */
 class HttpServerSocket : public BufferedSocket, public Timer, public insp::intrusive_list_node<HttpServerSocket>
