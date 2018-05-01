@@ -94,7 +94,6 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 	int OnUrl(const char* buf, size_t len)
 	{
-		if (!buf) return 1;
 		uri.append(buf, len);
 		return 0;
 	}
