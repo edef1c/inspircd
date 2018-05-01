@@ -29,7 +29,6 @@
 #include "iohook.h"
 #include "modules/httpd.h"
 #include <http_parser.h>
-#include <cassert>
 
 class ModuleHttpServer;
 
@@ -53,10 +52,9 @@ enum HttpState
 class HttpServerSocket : public BufferedSocket, public Timer, public insp::intrusive_list_node<HttpServerSocket>
 {
 	friend ModuleHttpServer;
+
 	http_parser parser;
-
 	std::string ip;
-
 	std::string uri;
 	HTTPHeaders headers;
 	std::string postdata;
@@ -85,7 +83,8 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		return (sock->*f)(buf, len);
 	}
 
-	static void ConfigureParser() {
+	static void ConfigureParser()
+	{
 		http_parser_settings_init(&parser_settings);
 		parser_settings.on_message_begin = Callback<&HttpServerSocket::OnMessageBegin>;
 		parser_settings.on_url = DataCallback<&HttpServerSocket::OnUrl>;
@@ -101,20 +100,24 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		postdata.clear();
 		return 0;
 	}
+
 	int OnUrl(const char *buf, size_t len)
 	{
 		if (!buf) return 1;
 		uri.append(buf, len);
 		return 0;
 	}
+
 	enum { HEADER_NONE, HEADER_FIELD, HEADER_VALUE } header_state;
 	std::string header_field, header_value;
+
 	void OnHeaderComplete()
 	{
 		headers.SetHeader(header_field, header_value);
 		header_field.clear();
 		header_value.clear();
 	}
+
 	int OnHeaderField(const char *buf, size_t len)
 	{
 		if (header_state == HEADER_VALUE)
@@ -123,23 +126,27 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		header_field.append(buf, len);
 		return 0;
 	}
+
 	int OnHeaderValue(const char *buf, size_t len)
 	{
 		header_state = HEADER_VALUE;
 		header_value.append(buf, len);
 		return 0;
 	}
+
 	int OnHeadersComplete()
 	{
 		if (header_state != HEADER_NONE)
 			OnHeaderComplete();
 		return 0;
 	}
+
 	int OnBody(const char *buf, size_t len)
 	{
 		postdata.append(buf, len);
 		return 0;
 	}
+
 	int OnMessageComplete()
 	{
 		ServeData();
