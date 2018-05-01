@@ -61,16 +61,16 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 	}
 
 	template<int (HttpServerSocket::*f)()>
-	static int Callback(http_parser *p)
+	static int Callback(http_parser* p)
 	{
-		HttpServerSocket *sock = static_cast<HttpServerSocket *>(p->data);
+		HttpServerSocket* sock = static_cast<HttpServerSocket*>(p->data);
 		return (sock->*f)();
 	}
 
-	template<int (HttpServerSocket::*f)(const char *, size_t)>
-	static int DataCallback(http_parser *p, const char *buf, size_t len)
+	template<int (HttpServerSocket::*f)(const char*, size_t)>
+	static int DataCallback(http_parser* p, const char* buf, size_t len)
 	{
-		HttpServerSocket *sock = static_cast<HttpServerSocket *>(p->data);
+		HttpServerSocket* sock = static_cast<HttpServerSocket*>(p->data);
 		return (sock->*f)(buf, len);
 	}
 
@@ -92,7 +92,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		return 0;
 	}
 
-	int OnUrl(const char *buf, size_t len)
+	int OnUrl(const char* buf, size_t len)
 	{
 		if (!buf) return 1;
 		uri.append(buf, len);
@@ -109,7 +109,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		header_value.clear();
 	}
 
-	int OnHeaderField(const char *buf, size_t len)
+	int OnHeaderField(const char* buf, size_t len)
 	{
 		if (header_state == HEADER_VALUE)
 			OnHeaderComplete();
@@ -118,7 +118,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		return 0;
 	}
 
-	int OnHeaderValue(const char *buf, size_t len)
+	int OnHeaderValue(const char* buf, size_t len)
 	{
 		header_state = HEADER_VALUE;
 		header_value.append(buf, len);
@@ -132,7 +132,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		return 0;
 	}
 
-	int OnBody(const char *buf, size_t len)
+	int OnBody(const char* buf, size_t len)
 	{
 		body.append(buf, len);
 		return 0;
@@ -177,7 +177,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		AddToCull();
 	}
 
-	const char *Response(unsigned int response)
+	const char* Response(unsigned int response)
 	{
 		switch (response)
 		{
@@ -246,7 +246,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		}
 	}
 
-	void Page(std::stringstream* n, unsigned int response, HTTPHeaders *hheaders)
+	void Page(std::stringstream* n, unsigned int response, HTTPHeaders* hheaders)
 	{
 		SendHeaders(n->str().length(), response, *hheaders);
 		WriteData(n->str());
