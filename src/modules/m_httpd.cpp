@@ -224,8 +224,9 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 	void OnDataReady() CXX11_OVERRIDE
 	{
+		if (parser.http_errno) return;
 		http_parser_execute(&parser, &parser_settings, recvq.data(), recvq.size());
-		// TODO: handle invalid requests and stuff
+		if (parser.http_errno) SendHTTPError(400);
 	}
 
 	void ServeData()
