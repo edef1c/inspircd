@@ -57,7 +57,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 	std::string ip;
 	std::string uri;
 	HTTPHeaders headers;
-	std::string postdata;
+	std::string body;
 
 	/** True if this object is in the cull list
 	 */
@@ -97,7 +97,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 	{
 		uri.clear();
 		header_state = HEADER_NONE;
-		postdata.clear();
+		body.clear();
 		return 0;
 	}
 
@@ -143,7 +143,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 	int OnBody(const char *buf, size_t len)
 	{
-		postdata.append(buf, len);
+		body.append(buf, len);
 		return 0;
 	}
 
@@ -242,11 +242,11 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 	{
 		ModResult MOD_RESULT;
 		std::string method = http_method_str(static_cast<http_method>(parser.method));
-		HTTPRequest acl(method, uri, &headers, this, ip, postdata);
+		HTTPRequest acl(method, uri, &headers, this, ip, body);
 		FIRST_MOD_RESULT_CUSTOM(*aclevprov, HTTPACLEventListener, OnHTTPACLCheck, MOD_RESULT, (acl));
 		if (MOD_RESULT != MOD_RES_DENY)
 		{
-			HTTPRequest url(method, uri, &headers, this, ip, postdata);
+			HTTPRequest url(method, uri, &headers, this, ip, body);
 			FIRST_MOD_RESULT_CUSTOM(*reqevprov, HTTPRequestEventListener, OnHTTPRequest, MOD_RESULT, (url));
 			if (MOD_RESULT == MOD_RES_PASSTHRU)
 			{
