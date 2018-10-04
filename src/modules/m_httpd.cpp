@@ -47,6 +47,8 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 	std::string uri;
 	HTTPHeaders headers;
 	std::string body;
+	size_t total_buffers;
+	int status_code;
 
 	/** True if this object is in the cull list
 	 */
@@ -87,11 +89,23 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		uri.clear();
 		header_state = HEADER_NONE;
 		body.clear();
+		total_buffers = 0;
 		return 0;
+	}
+
+	bool AcceptData(size_t len)
+	{
+		total_buffers += len;
+		return total_buffers < 8192;
 	}
 
 	int OnUrl(const char* buf, size_t len)
 	{
+		if (!AcceptData(len))
+		{
+			status_code = HTTP_STATUS_URI_TOO_LONG;
+			return -1;
+		}
 		uri.append(buf, len);
 		return 0;
 	}
@@ -111,6 +125,11 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		if (header_state == HEADER_VALUE)
 			OnHeaderComplete();
 		header_state = HEADER_FIELD;
+		if (!AcceptData(len))
+		{
+			status_code = HTTP_STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE;
+			return -1;
+		}
 		header_field.append(buf, len);
 		return 0;
 	}
@@ -118,6 +137,11 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 	int OnHeaderValue(const char* buf, size_t len)
 	{
 		header_state = HEADER_VALUE;
+		if (!AcceptData(len))
+		{
+			status_code = HTTP_STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE;
+			return -1;
+		}
 		header_value.append(buf, len);
 		return 0;
 	}
@@ -131,6 +155,11 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 	int OnBody(const char* buf, size_t len)
 	{
+		if (!AcceptData(len))
+		{
+			status_code = HTTP_STATUS_PAYLOAD_TOO_LARGE;
+			return -1;
+		}
 		body.append(buf, len);
 		return 0;
 	}
@@ -147,6 +176,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		, Timer(timeoutsec)
 		, ip(IP)
 		, waitingcull(false)
+		, status_code(0)
 	{
 		if ((!via->iohookprovs.empty()) && (via->iohookprovs.back()))
 		{
@@ -195,6 +225,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 		SendHeaders(data.length(), response, empty);
 		WriteData(data);
+		Close();
 	}
 
 	void SendHeaders(unsigned long size, unsigned int response, HTTPHeaders &rheaders)
@@ -222,9 +253,9 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 	void OnDataReady() CXX11_OVERRIDE
 	{
-		if (parser.http_errno) return;
+		if (parser.upgrade || HTTP_PARSER_ERRNO(&parser)) return;
 		http_parser_execute(&parser, &parser_settings, recvq.data(), recvq.size());
-		if (parser.http_errno) SendHTTPError(400);
+		if (parser.upgrade || HTTP_PARSER_ERRNO(&parser)) SendHTTPError(status_code ? status_code : 400);
 	}
 
 	void ServeData()
