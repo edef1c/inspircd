@@ -28,4 +28,6 @@ This directory contains vendored dependencies that are shipped with InspIRCd to 
 
 **Last Updated** &mdash; 2018-10-04 (77310eeb839c4251c07184a5db8885a572a08352)
 
+**License** &mdash; MIT
+
 **Website** &mdash; [https://github.com/nodejs/http-parser]
