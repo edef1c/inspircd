@@ -21,14 +21,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// $CompilerFlags: -I/nix/store/3vq96116x45yr58qyhsbcg4csaf6d320-http-parser-2.8.1/include
-/// $LinkerFlags: -L/nix/store/3vq96116x45yr58qyhsbcg4csaf6d320-http-parser-2.8.1/lib -lhttp_parser
-
+/// $CompilerFlags: -Ivendor_directory("http_parser")
 
 #include "inspircd.h"
 #include "iohook.h"
 #include "modules/httpd.h"
-#include <http_parser.h>
+#include <http_parser.c>
 
 class ModuleHttpServer;
 
