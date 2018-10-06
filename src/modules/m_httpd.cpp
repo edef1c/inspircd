@@ -35,6 +35,9 @@
 # pragma GCC diagnostic ignored "-pedantic"
 #endif
 
+// Fix warnings about shadowing in http_parser.
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #include <http_parser.c>
 
 class ModuleHttpServer;
