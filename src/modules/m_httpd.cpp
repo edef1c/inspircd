@@ -188,8 +188,8 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 		: BufferedSocket(newfd)
 		, Timer(timeoutsec)
 		, ip(IP)
-		, waitingcull(false)
 		, status_code(0)
+		, waitingcull(false)
 	{
 		if ((!via->iohookprovs.empty()) && (via->iohookprovs.back()))
 		{
