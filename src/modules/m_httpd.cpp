@@ -111,7 +111,8 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 	}
 
 	enum { HEADER_NONE, HEADER_FIELD, HEADER_VALUE } header_state;
-	std::string header_field, header_value;
+	std::string header_field;
+	std::string header_value;
 
 	void OnHeaderComplete()
 	{
@@ -253,9 +254,11 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 	void OnDataReady() CXX11_OVERRIDE
 	{
-		if (parser.upgrade || HTTP_PARSER_ERRNO(&parser)) return;
+		if (parser.upgrade || HTTP_PARSER_ERRNO(&parser))
+			return;
 		http_parser_execute(&parser, &parser_settings, recvq.data(), recvq.size());
-		if (parser.upgrade || HTTP_PARSER_ERRNO(&parser)) SendHTTPError(status_code ? status_code : 400);
+		if (parser.upgrade || HTTP_PARSER_ERRNO(&parser))
+			SendHTTPError(status_code ? status_code : 400);
 	}
 
 	void ServeData()
