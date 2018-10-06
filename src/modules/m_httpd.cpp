@@ -231,8 +231,7 @@ class HttpServerSocket : public BufferedSocket, public Timer, public insp::intru
 
 	void SendHeaders(unsigned long size, unsigned int response, HTTPHeaders &rheaders)
 	{
-
-		WriteData(InspIRCd::Format("HTTP/%u.%u %u %s\r\n", parser.http_major, parser.http_minor, response, Response(response)));
+		WriteData(InspIRCd::Format("HTTP/%u.%u %u %s\r\n", parser.http_major ? parser.http_major : 1, parser.http_major ? parser.http_minor : 1, response, Response(response)));
 
 		rheaders.CreateHeader("Date", InspIRCd::TimeString(ServerInstance->Time(), "%a, %d %b %Y %H:%M:%S GMT", true));
 		rheaders.CreateHeader("Server", INSPIRCD_BRANCH);
