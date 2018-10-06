@@ -23,9 +23,18 @@
 
 /// $CompilerFlags: -Ivendor_directory("http_parser")
 
+
 #include "inspircd.h"
 #include "iohook.h"
 #include "modules/httpd.h"
+
+// Fix warnings about the use of commas at end of enumerator lists on C++03.
+#if defined __clang__
+# pragma clang diagnostic ignored "-Wc++11-extensions"
+#elif defined __GNUC__
+# pragma GCC diagnostic ignored "-pedantic"
+#endif
+
 #include <http_parser.c>
 
 class ModuleHttpServer;
